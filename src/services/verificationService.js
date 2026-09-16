@@ -91,7 +91,26 @@ export async function verifyUser(client, guildId, userId, options = {}) {
         await checkVerificationCooldown(userId, guildId, defaultCooldownMs);
         await trackVerificationAttempt(userId, guildId, defaultMaxAttempts, defaultAttemptWindowMs);
 
-        await member.roles.add(verifiedRole.id, `User verified (${source})`);
+        // Alle Rollen entfernen, die der Bot verwalten darf
+const rolesToRemove = member.roles.cache.filter(role =>
+    role.id !== guild.id &&
+    role.id !== verifiedRole.id &&
+    !role.managed &&
+    role.position < guild.members.me.roles.highest.position
+);
+
+if (rolesToRemove.size > 0) {
+    await member.roles.remove(
+        rolesToRemove,
+        `Removing old roles during verification (${source})`
+    );
+}
+
+// Verifizierungsrolle vergeben
+await member.roles.add(
+    verifiedRole.id,
+    `User verified (${source})`
+);
 
         logVerificationAction(client, guildId, userId, 'verified', {
             source,
