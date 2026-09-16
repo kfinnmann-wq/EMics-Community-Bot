@@ -23,7 +23,7 @@ export const botConfig = {
     // 5 = Competing
     activities: [
       {
-        name: "Custom Status", // required by Discord API, not shown in the client
+        name: "discord.gg/emicscc", // required by Discord API, not shown in the client
         state: "EMics Community",     // this is what people actually see
         type: 3,               // Custom
       },
