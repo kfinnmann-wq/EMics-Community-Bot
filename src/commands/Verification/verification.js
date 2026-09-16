@@ -160,7 +160,6 @@ async function handleSetup(interaction, guild, client) {
     }
 
     const guildConfig = await getGuildConfig(client, guild.id);
-    const welcomeConfig = await getWelcomeConfig(client, guild.id);
 
 
     await InteractionHelper.safeDefer(interaction);
