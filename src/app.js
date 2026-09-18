@@ -247,11 +247,54 @@ class TitanBot extends Client {
     startServer(configuredPort, 0);
   }
 
-  setupCronJobs() {
-    cron.schedule('0 6 * * *', runSafeTask('birthday_check', () => checkBirthdays(this)));
-    cron.schedule('* * * * *', runSafeTask('giveaway_check', () => checkGiveaways(this)));
-    cron.schedule('*/15 * * * *', runSafeTask('counter_update', () => this.updateAllCounters()));
-  }
+```js
+setupCronJobs() {
+  cron.schedule(
+    '0 6 * * *',
+    runSafeTask('birthday_check', () => checkBirthdays(this))
+  );
+
+  cron.schedule(
+    '* * * * *',
+    runSafeTask('giveaway_check', () => checkGiveaways(this))
+  );
+
+  cron.schedule(
+    '*/15 * * * *',
+    runSafeTask('counter_update', () => this.updateAllCounters())
+  );
+
+  // YouTube alle 5 Minuten prüfen
+  cron.schedule(
+    '*/5 * * * *',
+    runSafeTask('youtube_check', async () => {
+      const configurations = [];
+
+      for (const [guildId] of this.guilds.cache) {
+        const guildConfig = await getGuildConfig(this, guildId);
+
+        if (
+          guildConfig.youtube &&
+          guildConfig.youtube.enabled &&
+          guildConfig.youtube.channelId &&
+          guildConfig.youtube.discordChannelId
+        ) {
+          configurations.push({
+            guildId,
+            youtubeChannelId: guildConfig.youtube.channelId,
+            channelId: guildConfig.youtube.discordChannelId,
+          });
+        }
+      }
+
+      if (configurations.length > 0) {
+        await checkYouTubeChannels(this, configurations);
+      }
+    })
+  );
+}
+```
+
 
   async updateAllCounters() {
     if (!this.db) {
